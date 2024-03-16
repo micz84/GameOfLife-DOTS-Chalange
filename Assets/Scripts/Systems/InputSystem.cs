@@ -9,14 +9,14 @@ namespace Systems
 {
     public partial class InputSystem : SystemBase
     {
-        private EntityQuery _cellsQuery;
-        private Manager _manager;
+        private EntityQuery m_cellsQuery;
+        private Manager m_manager;
         [BurstCompile]
         protected override void OnCreate()
         {
             RequireForUpdate<Config>();
             RequireForUpdate<ViewPosition>();
-            _cellsQuery = GetEntityQuery(ComponentType.ReadWrite<Position>());
+            m_cellsQuery = GetEntityQuery(ComponentType.ReadWrite<Position>());
         }
 
         protected override void OnUpdate()
@@ -48,12 +48,12 @@ namespace Systems
                     config.ViewSize /= 2;
                 else
                     config.ViewSize *= 2;
-                EntityManager.DestroyEntity(_cellsQuery);
+                EntityManager.DestroyEntity(m_cellsQuery);
                 EntityManager.SetComponentData(configEntity, config);
                 EntityManager.CreateEntity(typeof(StartSimulation));
-                if (_manager == null)
-                    _manager = GameObject.FindObjectOfType<Manager>();
-                _manager.UpdateCamera(config.ViewSize);
+                if (m_manager == null)
+                    m_manager = Object.FindObjectOfType<Manager>();
+                m_manager.UpdateCamera(config.ViewSize);
             }
             var x = (size + pos.x % size) % size;
             var y = (size + pos.y % size) % size;

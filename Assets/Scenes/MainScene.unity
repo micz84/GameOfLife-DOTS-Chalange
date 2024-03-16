@@ -6059,7 +6059,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 91996e5c312942caa8c43d7b14e08cbc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  camera: {fileID: 330585545}
+  mainCamera: {fileID: 330585545}
   panel: {fileID: 1642535674}
   simulationSizeValue: {fileID: 1489036106}
   simulationSize: {fileID: 2014895008}

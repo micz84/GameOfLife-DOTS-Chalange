@@ -30,7 +30,7 @@ namespace Systems
             manager.Instantiate(prefabEntity, entities);
 
             var setPositionsJob = new UpdateCellPositionsJob();
-            setPositionsJob.viewSize = viewSize;
+            setPositionsJob.ViewSize = viewSize;
             state.Dependency = setPositionsJob.ScheduleParallel(state.Dependency);
 
             entities.Dispose(state.Dependency);

@@ -7,14 +7,14 @@ namespace Systems
     [UpdateAfter(typeof(GameOfLifeSystem))]
     public partial struct StopSystem : ISystem
     {
-        private EntityQuery _cellsQuery;
+        private EntityQuery m_cellsQuery;
         [BurstCompile]
         public void OnCreate(ref SystemState state)
         {
             state.RequireForUpdate<StopSimulation>();
             state.RequireForUpdate<Config>();
             state.RequireForUpdate<ViewPosition>();
-            _cellsQuery = state.GetEntityQuery(ComponentType.ReadWrite<Position>());
+            m_cellsQuery = state.GetEntityQuery(ComponentType.ReadWrite<Position>());
         }
 
         [BurstCompile]
@@ -27,7 +27,7 @@ namespace Systems
             state.EntityManager.DestroyEntity(configEntity);
             state.EntityManager.DestroyEntity(viewEntity);
             state.EntityManager.DestroyEntity(stopEntity);
-            state.EntityManager.DestroyEntity(_cellsQuery);
+            state.EntityManager.DestroyEntity(m_cellsQuery);
         }
 
         [BurstCompile]

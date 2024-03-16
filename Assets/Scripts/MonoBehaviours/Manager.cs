@@ -1,4 +1,4 @@
-using System;
+using System.Globalization;
 using Components;
 using TMPro;
 using Unity.Entities;
@@ -10,7 +10,7 @@ namespace MonoBehaviours
 {
     public class Manager:MonoBehaviour
     {
-        [SerializeField] private Camera camera;
+        [SerializeField] private Camera mainCamera;
         [SerializeField] private GameObject panel;
         [SerializeField] private TextMeshProUGUI simulationSizeValue;
         [SerializeField] private Slider simulationSize;
@@ -28,21 +28,21 @@ namespace MonoBehaviours
         private void Start()
         {
             infoPanel.SetActive(false);
-            viewSizeValue.text = math.pow(2,viewSize.value).ToString();
-            simulationSizeValue.text = math.pow(2,simulationSize.value).ToString();
-            viewSizeMaxValue.text = math.pow(2,simulationSize.value).ToString();
+            viewSizeValue.text = math.pow(2,viewSize.value).ToString(CultureInfo.InvariantCulture);
+            simulationSizeValue.text = math.pow(2,simulationSize.value).ToString(CultureInfo.InvariantCulture);
+            viewSizeMaxValue.text = math.pow(2,simulationSize.value).ToString(CultureInfo.InvariantCulture);
             
             
             viewSize.onValueChanged.AddListener(_ =>
             {
-                viewSizeValue.text = math.pow(2,viewSize.value).ToString();
+                viewSizeValue.text = math.pow(2,viewSize.value).ToString(CultureInfo.InvariantCulture);
             });
             
             simulationSize.onValueChanged.AddListener(_ =>
             {
                 viewSize.maxValue = simulationSize.value;
-                simulationSizeValue.text = math.pow(2,simulationSize.value).ToString();
-                viewSizeMaxValue.text = math.pow(2,simulationSize.value).ToString();
+                simulationSizeValue.text = math.pow(2,simulationSize.value).ToString(CultureInfo.InvariantCulture);
+                viewSizeMaxValue.text = math.pow(2,simulationSize.value).ToString(CultureInfo.InvariantCulture);
             });
             startSimulation.onClick.AddListener(() =>
             {
@@ -90,12 +90,12 @@ namespace MonoBehaviours
             });
         }
 
-        public void UpdateCamera(int viewSize)
+        public void UpdateCamera(int viewWidth)
         {
-            viewSizePanel.text = $"{viewSize}x{viewSize}";
-            var halfViewSize = viewSize / 2;
-            camera.transform.position = new Vector3(halfViewSize, halfViewSize, -10);
-            camera.orthographicSize = halfViewSize;
+            viewSizePanel.text = $"{viewWidth}x{viewWidth}";
+            var halfViewSize = viewWidth / 2;
+            mainCamera.transform.position = new Vector3(halfViewSize, halfViewSize, -10);
+            mainCamera.orthographicSize = halfViewSize;
         }
 
         private void OnDestroy()

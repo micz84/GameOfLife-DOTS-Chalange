@@ -12,8 +12,8 @@ namespace Systems
     [UpdateAfter(typeof(InitializeSystem))]
     public partial struct GameOfLifeSystem : ISystem
     {
-        private NativeArray<CellData> _cells;
-        private NativeArray<byte> _buffer;
+        private NativeArray<CellData> m_cells;
+        private NativeArray<byte> m_buffer;
 
         [BurstCompile]
         public void OnCreate(ref SystemState state)
@@ -29,13 +29,13 @@ namespace Systems
             var viewPosition = SystemAPI.GetSingleton<ViewPosition>();
             var size = config.SimulationSize;
             var viewSize = config.ViewSize;
-            if (!_cells.IsCreated || _cells.Length != size * size)
+            if (!m_cells.IsCreated || m_cells.Length != size * size)
             {
-                if (_cells.IsCreated)
-                    _cells.Dispose();
+                if (m_cells.IsCreated)
+                    m_cells.Dispose();
                 
-                _cells = new NativeArray<CellData>(size * size, Allocator.Persistent);
-                _buffer = new NativeArray<byte>(size * size, Allocator.Persistent);
+                m_cells = new NativeArray<CellData>(size * size, Allocator.Persistent);
+                m_buffer = new NativeArray<byte>(size * size, Allocator.Persistent);
                 var tempOffsets = new NativeArray<int2>(8, Allocator.Temp);
                 var random = new Random(config.Seed);
 
@@ -48,9 +48,9 @@ namespace Systems
                 tempOffsets[6] = new int2(-1, 0);
                 tempOffsets[7] = new int2(-1, 1);
 
-                for (var i = 0; i < _cells.Length; i++)
+                for (var i = 0; i < m_cells.Length; i++)
                 {
-                    var data = _cells[i];
+                    var data = m_cells[i];
                     var x = i % size;
                     var y = i / size;
                     int4x2 neighbours = new int4x2();
@@ -67,29 +67,29 @@ namespace Systems
 
                     data.NeighboursIndex = neighbours;
                     data.State = (byte)random.NextInt(2);
-                    _cells[i] = data;
+                    m_cells[i] = data;
                 }
             }
 
             var golJob = new GameOfLiveJob()
             {
-                Cells = _cells,
-                Data = _buffer
+                Cells = m_cells,
+                Data = m_buffer
             };
-            state.Dependency = golJob.Schedule(_cells.Length, 64, state.Dependency);
+            state.Dependency = golJob.Schedule(m_cells.Length, 64, state.Dependency);
             var copyJob = new CopyJob()
             {
-                Cells = _cells,
-                Data = _buffer
+                Cells = m_cells,
+                Data = m_buffer
             };
 
-            var jobCopyHandle = copyJob.Schedule(_cells.Length, 64, state.Dependency);
+            var jobCopyHandle = copyJob.Schedule(m_cells.Length, 64, state.Dependency);
             var setCellStateJob = new SetCellStateJob()
             {
                 Center = viewPosition.Center,
-                size = size,
-                halfViewSize = new int2(viewSize/2,viewSize/2),
-                Buffer = _buffer
+                Size = size,
+                HalfViewSize = new int2(viewSize/2,viewSize/2),
+                Buffer = m_buffer
             };
             var updateMaterialHandle = setCellStateJob.ScheduleParallel(state.Dependency);
             state.Dependency = JobHandle.CombineDependencies(jobCopyHandle, updateMaterialHandle);
@@ -119,32 +119,6 @@ namespace Systems
                 var state = (byte)math.select(0, 1, (currentCell.State == 1 && neighboursCount == 2) || neighboursCount == 3);
                 Data[index] = state;
             }
-            
-            public void Execute()
-            {
-                for (var index = 0; index < Cells.Length; index++)
-                {
-                    var currentCell = Cells[index];
-
-                    var neighboursCount = 0;
-                    for (var i = 0; i < 8; i++)
-                    {
-                        var temp = currentCell.NeighboursIndex[i % 2];
-                        var neighbourIndex = temp[i % 4];
-                        var neighbourCell = Cells[neighbourIndex];
-                        neighboursCount += neighbourCell.State;
-                    }
-
-                    var state = currentCell.State;
-
-                    if (state == 0 && neighboursCount == 3)
-                        state = 1;
-                    else if (state == 1 && neighboursCount != 2 && neighboursCount != 3)
-                        state = 0;
-
-                    Data[index] = state;
-                }
-            }
         }
 
         [BurstCompile]
@@ -164,10 +138,10 @@ namespace Systems
         [BurstCompile]
         public void OnDestroy(ref SystemState state)
         {
-            if (_cells.IsCreated)
-                _cells.Dispose();
-            if (_buffer.IsCreated)
-                _buffer.Dispose();
+            if (m_cells.IsCreated)
+                m_cells.Dispose();
+            if (m_buffer.IsCreated)
+                m_buffer.Dispose();
         }
     }
 }

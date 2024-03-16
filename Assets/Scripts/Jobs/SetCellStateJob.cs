@@ -13,14 +13,14 @@ namespace Jobs
     {
         [ReadOnly] public NativeArray<byte> Buffer;
         [ReadOnly] public int2 Center;
-        [ReadOnly] public int2 halfViewSize;
-        [ReadOnly] public int size;
+        [ReadOnly] public int2 HalfViewSize;
+        [ReadOnly] public int Size;
 
         public void Execute(in Position cell, ref URPMaterialPropertyBaseColor materialPropertyBaseColor)
         {
-            var position = cell.Value + Center - halfViewSize;
-            position = new int2((size + position.x % size) % size, (size + position.y % size) % size);
-            var index = position.x + position.y * size;
+            var position = cell.Value + Center - HalfViewSize;
+            position = new int2((Size + position.x % Size) % Size, (Size + position.y % Size) % Size);
+            var index = position.x + position.y * Size;
             var state = Buffer[index];
             var color = new float4(state, state, state, 1);
             materialPropertyBaseColor.Value = color;
