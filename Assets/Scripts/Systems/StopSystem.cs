@@ -14,7 +14,7 @@ namespace Systems
             state.RequireForUpdate<StopSimulation>();
             state.RequireForUpdate<Config>();
             state.RequireForUpdate<ViewPosition>();
-            _cellsQuery = state.GetEntityQuery(typeof(Position));
+            _cellsQuery = state.GetEntityQuery(ComponentType.ReadWrite<Position>());
         }
 
         [BurstCompile]

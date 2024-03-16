@@ -16,7 +16,7 @@ namespace Systems
         {
             RequireForUpdate<Config>();
             RequireForUpdate<ViewPosition>();
-            _cellsQuery = GetEntityQuery(typeof(Position));
+            _cellsQuery = GetEntityQuery(ComponentType.ReadWrite<Position>());
         }
 
         protected override void OnUpdate()
