@@ -119,16 +119,14 @@ namespace Systems
                 var currentCell = Cells[index];
 
                 var neighboursCount = 0;
-                var x = (int) math.fmod(index, SimulationSize.x);
+                var x = math.fmod(index, SimulationSize.x);
                 var y = index / SimulationSize.x;
-                var p = new int2(x, y);
-                var temp = SimulationSize.x - 1;
+                var p = new float2(x, y);
+                
                 for (var i = 0; i < 8; i++)
                 {
                     var tempOffset = NeighbourOffsets[i];
-                    var n = (SimulationSize + p + tempOffset);
-                    n.x &= temp;
-                    n.y &= temp;
+                    var n = (SimulationSize + p + tempOffset) %SimulationSize;
                     var nIndex = n.x + n.y * SimulationSize.x;
                     var neighbourCell = Cells[(int) nIndex];
                     neighboursCount += neighbourCell.State;
