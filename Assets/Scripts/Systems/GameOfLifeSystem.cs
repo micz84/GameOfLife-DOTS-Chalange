@@ -126,6 +126,8 @@ namespace Systems
                 for (var i = 0; i < 8; i++)
                 {
                     var tempOffset = NeighbourOffsets[i];
+                    //var nX = (int) math.fmod(SimulationSize + (x + tempOffset.x),SimulationSize);
+                    //var nY = (int) math.fmod(SimulationSize + (y + tempOffset.y), SimulationSize);
                     var n = (SimulationSize + p + tempOffset) %SimulationSize;
                     var nIndex = n.x + n.y * SimulationSize.x;
                     var neighbourCell = Cells[(int) nIndex];
