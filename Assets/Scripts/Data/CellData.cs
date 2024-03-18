@@ -6,6 +6,6 @@ namespace Data
     {
         public byte State;
 
-        public int4x2 NeighboursIndex;
+        //public int4x2 NeighboursIndex;
     }
 }

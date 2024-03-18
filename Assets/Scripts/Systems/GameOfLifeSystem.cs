@@ -14,12 +14,22 @@ namespace Systems
     {
         private NativeArray<CellData> m_cells;
         private NativeArray<byte> m_buffer;
+        private NativeArray<int2> m_offsets;
 
         [BurstCompile]
         public void OnCreate(ref SystemState state)
         {
             state.RequireForUpdate<Config>();
             state.RequireForUpdate<ViewPosition>();
+            m_offsets = new NativeArray<int2>(8, Allocator.Persistent);
+            m_offsets[0] = new int2(0, 1);
+            m_offsets[1] = new int2(1, 1);
+            m_offsets[2] = new int2(1, 0);
+            m_offsets[3] = new int2(1, -1);
+            m_offsets[4] = new int2(0, -1);
+            m_offsets[5] = new int2(-1, -1);
+            m_offsets[6] = new int2(-1, 0);
+            m_offsets[7] = new int2(-1, 1);
         }
 
         [BurstCompile]
@@ -36,22 +46,15 @@ namespace Systems
                 
                 m_cells = new NativeArray<CellData>(size * size, Allocator.Persistent);
                 m_buffer = new NativeArray<byte>(size * size, Allocator.Persistent);
-                var tempOffsets = new NativeArray<int2>(8, Allocator.Temp);
+                //var tempOffsets = new NativeArray<int2>(8, Allocator.Temp);
                 var random = new Random(config.Seed);
 
-                tempOffsets[0] = new int2(0, 1);
-                tempOffsets[1] = new int2(1, 1);
-                tempOffsets[2] = new int2(1, 0);
-                tempOffsets[3] = new int2(1, -1);
-                tempOffsets[4] = new int2(0, -1);
-                tempOffsets[5] = new int2(-1, -1);
-                tempOffsets[6] = new int2(-1, 0);
-                tempOffsets[7] = new int2(-1, 1);
+                
 
                 for (var i = 0; i < m_cells.Length; i++)
                 {
                     var data = m_cells[i];
-                    var x = i % size;
+                    /*var x = i % size;
                     var y = i / size;
                     int4x2 neighbours = new int4x2();
                     for (var n = 0; n < 8; n++)
@@ -65,7 +68,7 @@ namespace Systems
                         neighbours[n / 4] = temp;
                     }
 
-                    data.NeighboursIndex = neighbours;
+                    data.NeighboursIndex = neighbours;*/
                     data.State = (byte)random.NextInt(2);
                     m_cells[i] = data;
                 }
@@ -74,7 +77,10 @@ namespace Systems
             var golJob = new GameOfLiveJob()
             {
                 Cells = m_cells,
-                Data = m_buffer
+                Data = m_buffer,
+                SimulationSize = size,
+                NeighbourOffsets = m_offsets
+                
             };
             state.Dependency = golJob.Schedule(m_cells.Length, 64, state.Dependency);
             var copyJob = new CopyJob()
@@ -103,16 +109,28 @@ namespace Systems
             [WriteOnly]
             public NativeArray<byte> Data;
 
+            [ReadOnly] public int2 SimulationSize;
+
+            [ReadOnly] public NativeArray<int2> NeighbourOffsets;
+
+
             public void Execute(int index)
             {
                 var currentCell = Cells[index];
 
                 var neighboursCount = 0;
+                var x = math.fmod(index, SimulationSize.x);
+                var y = index / SimulationSize.x;
+                var p = new float2(x, y);
+                
                 for (var i = 0; i < 8; i++)
                 {
-                    var temp = currentCell.NeighboursIndex[i / 4];
-                    var neighbourIndex = temp[i % 4];
-                    var neighbourCell = Cells[neighbourIndex];
+                    var tempOffset = NeighbourOffsets[i];
+                    //var nX = (int) math.fmod(SimulationSize + (x + tempOffset.x),SimulationSize);
+                    //var nY = (int) math.fmod(SimulationSize + (y + tempOffset.y), SimulationSize);
+                    var n = (SimulationSize + p + tempOffset) %SimulationSize;
+                    var nIndex = n.x + n.y * SimulationSize.x;
+                    var neighbourCell = Cells[(int) nIndex];
                     neighboursCount += neighbourCell.State;
                 }
 
